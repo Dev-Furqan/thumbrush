@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <rect width="1000" height="1000" fill="#09111f"/>
+  <rect x="66" y="66" width="868" height="868" rx="34" fill="#f8fbff"/>
+  <rect x="116" y="118" width="768" height="418" rx="28" fill="#54d6ff"/>
+  <circle cx="716" cy="327" r="128" fill="#8b5cf6"/>
+  <text x="118" y="664" fill="#09111f" font-family="Arial Black,Arial" font-size="84">PRODUCT</text>
+  <text x="118" y="760" fill="#09111f" font-family="Arial Black,Arial" font-size="96">DROP</text>
+  <rect x="120" y="816" width="320" height="70" rx="12" fill="#09111f"/>
+  <text x="152" y="862" fill="#54d6ff" font-family="Arial Black,Arial" font-size="30">SOCIAL POST</text>
+</svg>

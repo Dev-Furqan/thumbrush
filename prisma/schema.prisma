@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String          @id
+  label     String
+  createdAt DateTime        @default(now())
+  items     PortfolioItem[]
+}
+
+model PortfolioItem {
+  id            String    @id @default(cuid())
+  categoryId    String
+  imageUrl      String
+  imagePublicId String?
+  isFeatured    Boolean   @default(false)
+  isPublished   Boolean   @default(true)
+  displayOrder  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  category      Category  @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@index([isPublished, isFeatured, displayOrder, createdAt])
+}

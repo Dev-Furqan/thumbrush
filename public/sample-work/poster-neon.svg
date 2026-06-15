@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200">
+  <rect width="900" height="1200" fill="#070912"/>
+  <path d="M0 180C250 80 560 60 900 156v740C620 998 260 1020 0 898Z" fill="#121a38"/>
+  <circle cx="450" cy="412" r="252" fill="#54d6ff" opacity=".95"/>
+  <circle cx="450" cy="412" r="190" fill="#8b5cf6"/>
+  <text x="92" y="192" fill="#fff" font-family="Arial Black,Arial" font-size="74">NEON</text>
+  <text x="92" y="282" fill="#54d6ff" font-family="Arial Black,Arial" font-size="86">NIGHT</text>
+  <text x="94" y="850" fill="#fff" font-family="Arial Black,Arial" font-size="62">EVENT POSTER</text>
+  <text x="96" y="930" fill="#a9b9d3" font-family="Arial,Arial" font-size="34">premium campaign visual</text>
+  <rect x="96" y="1000" width="348" height="74" rx="12" fill="#fff"/>
+  <text x="126" y="1049" fill="#070912" font-family="Arial Black,Arial" font-size="32">THUMBRUSH</text>
+</svg>

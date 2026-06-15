@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <rect width="1000" height="1000" fill="#070912"/>
+  <circle cx="500" cy="460" r="170" fill="#54d6ff"/>
+  <ellipse cx="500" cy="460" rx="330" ry="118" fill="none" stroke="#8b5cf6" stroke-width="48" transform="rotate(-22 500 460)"/>
+  <circle cx="710" cy="340" r="52" fill="#fff"/>
+  <text x="250" y="786" fill="#fff" font-family="Arial Black,Arial" font-size="86">ORBIT</text>
+  <text x="332" y="850" fill="#9ba8bd" font-family="Arial,Arial" font-size="34">logo system</text>
+</svg>
