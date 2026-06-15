@@ -12,11 +12,11 @@ export function LoginForm() {
     <form action={formAction} className="grid gap-4">
       <label>
         <span className="mb-2 block text-sm font-semibold text-white/70">Admin Email</span>
-        <Input name="email" type="email" placeholder="admin@thumbrush.local" required />
+        <Input autoComplete="username" name="email" type="email" placeholder="admin@thumbrush.local" required suppressHydrationWarning />
       </label>
       <label>
         <span className="mb-2 block text-sm font-semibold text-white/70">Password</span>
-        <Input name="password" type="password" placeholder="••••••••" required />
+        <Input autoComplete="current-password" name="password" type="password" placeholder="Password" required suppressHydrationWarning />
       </label>
       {state.error ? <p className="rounded-lg border border-rose-300/20 bg-rose-500/10 p-3 text-sm text-rose-100">{state.error}</p> : null}
       <Button disabled={pending} type="submit">

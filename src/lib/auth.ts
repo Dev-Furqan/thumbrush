@@ -15,6 +15,22 @@ function timingSafeEqual(a: string, b: string) {
   return left.length === right.length && crypto.timingSafeEqual(left, right);
 }
 
+function normalizeEnvValue(value: string) {
+  const trimmed = value.trim();
+  const first = trimmed.at(0);
+  const last = trimmed.at(-1);
+
+  if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
+
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
 function sign(payload: string) {
   return crypto.createHmac("sha256", getSecret()).update(payload).digest("hex");
 }
@@ -74,8 +90,8 @@ export async function clearAdminSession() {
 }
 
 export function validateAdminCredentials(email: string, password: string) {
-  const expectedEmail = process.env.ADMIN_EMAIL || "admin@thumbrush.local";
-  const expectedPassword = process.env.ADMIN_PASSWORD || "change-this-password";
+  const expectedEmail = normalizeEmail(normalizeEnvValue(process.env.ADMIN_EMAIL || "admin@thumbrush.local"));
+  const expectedPassword = normalizeEnvValue(process.env.ADMIN_PASSWORD || "change-this-password");
 
-  return timingSafeEqual(email, expectedEmail) && timingSafeEqual(password, expectedPassword);
+  return timingSafeEqual(normalizeEmail(email), expectedEmail) && timingSafeEqual(password, expectedPassword);
 }
