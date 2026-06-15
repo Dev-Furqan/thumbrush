@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { getPrisma } from "@/lib/prisma";
+import { createPortfolioItem, listPortfolioItems } from "@/lib/portfolio-store";
 import { portfolioSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
@@ -11,11 +11,7 @@ export async function GET(request: Request) {
     await requireAdmin();
   }
 
-  const items = await getPrisma().portfolioItem.findMany({
-    where: includeDrafts ? undefined : { isPublished: true },
-    include: { category: true },
-    orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { createdAt: "desc" }],
-  });
+  const items = await listPortfolioItems({ includeDrafts });
 
   return NextResponse.json({ items });
 }
@@ -25,11 +21,9 @@ export async function POST(request: Request) {
   const json = await request.json();
   const parsed = portfolioSchema.parse(json);
 
-  const item = await getPrisma().portfolioItem.create({
-    data: {
-      ...parsed,
-      imagePublicId: parsed.imagePublicId || null,
-    },
+  const item = await createPortfolioItem({
+    ...parsed,
+    imagePublicId: parsed.imagePublicId || null,
   });
 
   return NextResponse.json({ item }, { status: 201 });

@@ -4,25 +4,23 @@ import { Plus } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/auth";
 import { categories, getCategoryLabel } from "@/lib/categories";
-import { getPrisma } from "@/lib/prisma";
+import { listPortfolioItems } from "@/lib/portfolio-store";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
-  const prisma = getPrisma();
-  const dashboardData = await Promise.all([
-    prisma.portfolioItem.count(),
-    prisma.portfolioItem.groupBy({ by: ["categoryId"], _count: true }),
-    prisma.portfolioItem.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-  ]).then(([total, grouped, recent]) => ({ storageError: false, total, grouped, recent })).catch((error) => {
-    console.error("[admin] failed to load dashboard data", error);
-    return { storageError: true, total: 0, grouped: [], recent: [] };
-  });
-  const { storageError, total, grouped, recent } = dashboardData;
+  const dashboardData = await listPortfolioItems({ includeDrafts: true }).then((items) => {
+    const counts: Record<string, number> = Object.fromEntries(categories.map((category) => [category.id, items.filter((item) => item.categoryId === category.id).length]));
+    const recent = [...items].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5);
 
-  const counts = Object.fromEntries(grouped.map((group) => [group.categoryId, group._count]));
+    return { storageError: false, total: items.length, counts, recent };
+  }).catch((error) => {
+    console.error("[admin] failed to load dashboard data", error);
+    return { storageError: true, total: 0, counts: {} as Record<string, number>, recent: [] };
+  });
+  const { storageError, total, counts, recent } = dashboardData;
 
   return (
     <AdminShell>

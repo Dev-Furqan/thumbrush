@@ -12,17 +12,13 @@ import { Stats } from "@/components/site/Stats";
 import { Testimonials } from "@/components/site/Testimonials";
 import { WhyChoose } from "@/components/site/WhyChoose";
 import { getCategoryLabel } from "@/lib/categories";
-import { getPrisma } from "@/lib/prisma";
+import { listPortfolioItems } from "@/lib/portfolio-store";
 
 export const dynamic = "force-dynamic";
 
 async function getPortfolioItems(): Promise<PortfolioItemView[]> {
   try {
-    const items = await getPrisma().portfolioItem.findMany({
-      where: { isPublished: true },
-      include: { category: true },
-      orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-    });
+    const items = await listPortfolioItems();
 
     return items.map((item) => ({
       id: item.id,

@@ -3,15 +3,13 @@ import { Plus } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { PortfolioTable } from "@/components/admin/PortfolioTable";
 import { requireAdmin } from "@/lib/auth";
-import { getPrisma } from "@/lib/prisma";
+import { listPortfolioItems } from "@/lib/portfolio-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPortfolioPage() {
   await requireAdmin();
-  const portfolioData = await getPrisma().portfolioItem.findMany({
-    orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-  }).then((items) => ({ storageError: false, items })).catch((error) => {
+  const portfolioData = await listPortfolioItems({ includeDrafts: true }).then((items) => ({ storageError: false, items })).catch((error) => {
     console.error("[admin] failed to load portfolio items", error);
     return { storageError: true, items: [] };
   });

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
-import { deleteCloudinaryImage } from "@/lib/cloudinary";
-import { getPrisma } from "@/lib/prisma";
+import { deletePortfolioItem, getPortfolioItem, updatePortfolioItem } from "@/lib/portfolio-store";
 import { portfolioSchema } from "@/lib/validations";
 
 type RouteContext = {
@@ -14,12 +13,14 @@ export async function PATCH(request: Request, context: RouteContext) {
   const json = await request.json();
   const parsed = portfolioSchema.partial().parse(json);
 
-  const item = await getPrisma().portfolioItem.update({
-    where: { id },
-    data: {
-      ...parsed,
-      imagePublicId: parsed.imagePublicId || undefined,
-    },
+  const current = await getPortfolioItem(id);
+  const item = await updatePortfolioItem(id, {
+    categoryId: parsed.categoryId ?? current?.categoryId ?? "THUMBNAIL",
+    imageUrl: parsed.imageUrl ?? current?.imageUrl ?? "",
+    imagePublicId: parsed.imagePublicId ?? current?.imagePublicId ?? null,
+    isFeatured: parsed.isFeatured ?? current?.isFeatured ?? false,
+    isPublished: parsed.isPublished ?? current?.isPublished ?? true,
+    displayOrder: parsed.displayOrder ?? current?.displayOrder ?? 0,
   });
 
   return NextResponse.json({ item });
@@ -28,8 +29,6 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_request: Request, context: RouteContext) {
   await requireAdmin();
   const { id } = await context.params;
-  const item = await getPrisma().portfolioItem.delete({ where: { id } });
-
-  await deleteCloudinaryImage(item.imagePublicId);
+  await deletePortfolioItem(id);
   return NextResponse.json({ ok: true });
 }

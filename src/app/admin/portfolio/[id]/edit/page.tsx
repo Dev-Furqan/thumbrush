@@ -3,7 +3,7 @@ import { updatePortfolioItem } from "@/app/actions";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { PortfolioForm } from "@/components/admin/PortfolioForm";
 import { requireAdmin } from "@/lib/auth";
-import { getPrisma } from "@/lib/prisma";
+import { getPortfolioItem } from "@/lib/portfolio-store";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -17,7 +17,7 @@ export default async function EditPortfolioPage({ params, searchParams }: PagePr
   const { id } = await params;
   const query = await searchParams;
   const error = Array.isArray(query?.error) ? query.error[0] : query?.error;
-  const itemData = await getPrisma().portfolioItem.findUnique({ where: { id } }).then((item) => ({ storageError: false, item })).catch((loadError) => {
+  const itemData = await getPortfolioItem(id).then((item) => ({ storageError: false, item })).catch((loadError) => {
     console.error("[admin] failed to load portfolio item", loadError);
     return { storageError: true, item: null };
   });
