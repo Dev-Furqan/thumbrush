@@ -12,11 +12,15 @@ export const dynamic = "force-dynamic";
 export default async function AdminDashboardPage() {
   await requireAdmin();
   const prisma = getPrisma();
-  const [total, grouped, recent] = await Promise.all([
+  const dashboardData = await Promise.all([
     prisma.portfolioItem.count(),
     prisma.portfolioItem.groupBy({ by: ["categoryId"], _count: true }),
     prisma.portfolioItem.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
-  ]);
+  ]).then(([total, grouped, recent]) => ({ storageError: false, total, grouped, recent })).catch((error) => {
+    console.error("[admin] failed to load dashboard data", error);
+    return { storageError: true, total: 0, grouped: [], recent: [] };
+  });
+  const { storageError, total, grouped, recent } = dashboardData;
 
   const counts = Object.fromEntries(grouped.map((group) => [group.categoryId, group._count]));
 
@@ -31,6 +35,12 @@ export default async function AdminDashboardPage() {
           <Plus size={18} /> Upload Image
         </Link>
       </div>
+
+      {storageError ? (
+        <div className="mt-6 rounded-lg border border-amber-300/25 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
+          Admin storage is not available on this deployment. Check the production database connection and run migrations before uploading images.
+        </div>
+      ) : null}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Metric label="Total uploaded images" value={total} />

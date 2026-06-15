@@ -9,9 +9,13 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPortfolioPage() {
   await requireAdmin();
-  const items = await getPrisma().portfolioItem.findMany({
+  const portfolioData = await getPrisma().portfolioItem.findMany({
     orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+  }).then((items) => ({ storageError: false, items })).catch((error) => {
+    console.error("[admin] failed to load portfolio items", error);
+    return { storageError: true, items: [] };
   });
+  const { storageError, items } = portfolioData;
   const serializedItems = items.map((item) => ({
     ...item,
     createdAt: item.createdAt.toISOString(),
@@ -29,6 +33,11 @@ export default async function AdminPortfolioPage() {
           <Plus size={18} /> Add New
         </Link>
       </div>
+      {storageError ? (
+        <div className="mt-6 rounded-lg border border-amber-300/25 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
+          Admin storage is not available on this deployment. Check the production database connection and run migrations before managing images.
+        </div>
+      ) : null}
       <div className="mt-8">
         <PortfolioTable items={serializedItems} />
       </div>

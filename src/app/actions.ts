@@ -39,6 +39,10 @@ function portfolioPayload(formData: FormData) {
   };
 }
 
+function storageErrorMessage(action: string) {
+  return `Admin storage is not available. Check the production database connection and migrations, then try to ${action} again.`;
+}
+
 export async function loginAction(_state: { error: string }, formData: FormData) {
   const email = formValue(formData, "email");
   const password = formValue(formData, "password");
@@ -65,9 +69,15 @@ export async function createPortfolioItem(formData: FormData) {
     redirect(`/admin/portfolio/new?error=${encodeURIComponent(payload.error)}`);
   }
 
-  await prisma.portfolioItem.create({
-    data: payload.data,
-  });
+  try {
+    await ensureDefaultCategories();
+    await prisma.portfolioItem.create({
+      data: payload.data,
+    });
+  } catch (error) {
+    console.error("[admin] failed to create portfolio item", error);
+    redirect(`/admin/portfolio/new?error=${encodeURIComponent(storageErrorMessage("save this image"))}`);
+  }
 
   revalidatePath("/");
   revalidatePath("/admin");
@@ -83,16 +93,23 @@ export async function updatePortfolioItem(id: string, formData: FormData) {
     redirect(`/admin/portfolio/${id}/edit?error=${encodeURIComponent(payload.error)}`);
   }
 
-  const current = await prisma.portfolioItem.findUnique({ where: { id } });
+  let current;
+  try {
+    await ensureDefaultCategories();
+    current = await prisma.portfolioItem.findUnique({ where: { id } });
 
-  if (!current) {
-    throw new Error("Portfolio item not found.");
+    if (!current) {
+      redirect(`/admin/portfolio?error=${encodeURIComponent("Portfolio item not found.")}`);
+    }
+
+    await prisma.portfolioItem.update({
+      where: { id },
+      data: payload.data,
+    });
+  } catch (error) {
+    console.error("[admin] failed to update portfolio item", error);
+    redirect(`/admin/portfolio/${id}/edit?error=${encodeURIComponent(storageErrorMessage("update this image"))}`);
   }
-
-  await prisma.portfolioItem.update({
-    where: { id },
-    data: payload.data,
-  });
 
   if (current.imagePublicId && current.imagePublicId !== payload.data.imagePublicId) {
     await deleteCloudinaryImage(current.imagePublicId);
@@ -106,8 +123,13 @@ export async function updatePortfolioItem(id: string, formData: FormData) {
 
 export async function deletePortfolioItem(id: string) {
   await requireAdmin();
-  const prisma = getPrisma();
-  const item = await prisma.portfolioItem.delete({ where: { id } });
+  let item;
+  try {
+    item = await getPrisma().portfolioItem.delete({ where: { id } });
+  } catch (error) {
+    console.error("[admin] failed to delete portfolio item", error);
+    return;
+  }
 
   await deleteCloudinaryImage(item.imagePublicId);
   revalidatePath("/");
@@ -117,7 +139,12 @@ export async function deletePortfolioItem(id: string) {
 
 export async function toggleFeatured(id: string, isFeatured: boolean) {
   await requireAdmin();
-  await getPrisma().portfolioItem.update({ where: { id }, data: { isFeatured } });
+  try {
+    await getPrisma().portfolioItem.update({ where: { id }, data: { isFeatured } });
+  } catch (error) {
+    console.error("[admin] failed to toggle featured status", error);
+    return;
+  }
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/portfolio");
@@ -125,7 +152,12 @@ export async function toggleFeatured(id: string, isFeatured: boolean) {
 
 export async function togglePublished(id: string, isPublished: boolean) {
   await requireAdmin();
-  await getPrisma().portfolioItem.update({ where: { id }, data: { isPublished } });
+  try {
+    await getPrisma().portfolioItem.update({ where: { id }, data: { isPublished } });
+  } catch (error) {
+    console.error("[admin] failed to toggle published status", error);
+    return;
+  }
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/portfolio");

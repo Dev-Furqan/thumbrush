@@ -17,7 +17,25 @@ export default async function EditPortfolioPage({ params, searchParams }: PagePr
   const { id } = await params;
   const query = await searchParams;
   const error = Array.isArray(query?.error) ? query.error[0] : query?.error;
-  const item = await getPrisma().portfolioItem.findUnique({ where: { id } });
+  const itemData = await getPrisma().portfolioItem.findUnique({ where: { id } }).then((item) => ({ storageError: false, item })).catch((loadError) => {
+    console.error("[admin] failed to load portfolio item", loadError);
+    return { storageError: true, item: null };
+  });
+  const { storageError, item } = itemData;
+
+  if (storageError) {
+    return (
+      <AdminShell>
+        <div>
+          <p className="text-sm font-bold uppercase text-red-500">Edit Work</p>
+          <h1 className="mt-2 text-3xl font-black text-white">Edit Uploaded Image</h1>
+        </div>
+        <div className="mt-8 rounded-lg border border-amber-300/25 bg-amber-400/10 p-4 text-sm leading-6 text-amber-100">
+          Admin storage is not available on this deployment. Check the production database connection and run migrations before editing images.
+        </div>
+      </AdminShell>
+    );
+  }
 
   if (!item) notFound();
 
